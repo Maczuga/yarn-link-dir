@@ -1,19 +1,54 @@
+#!/usr/bin/env node
+
 /* eslint-disable @typescript-eslint/no-var-requires */
 const {spawn} = require("child_process");
 const path = require("path");
 const fs = require("fs");
+
+const argv = require("yargs/yargs")(process.argv.slice(2))
+  .usage("Usage $0 <cmd> [options]")
+  .option("m", {
+    array: false,
+    description: "link/unlink",
+    choices: ["link", "unlink"],
+    required: true,
+    alias: "mode"
+  })
+  .option("pm", {
+    array: false,
+    description: "package manager",
+    alias: "packageManager",
+    choices: ["npm", "yarn"],
+    required: true,
+  })
+  .option("from", {
+    array: false,
+    description: "directory containing packages to be linked",
+    alias: "packagesDirectory",
+    required: true,
+  })
+  .option("to", {
+    array: false,
+    description: "directory containing project, where packages have to be linked",
+    alias: "projectDirectory"
+  })
+  .option("h", {
+    alias: "help",
+    description: "display help message"
+  })
+  .help()
+  .parse();
+
 const colors = require("./lib/console");
 
-const [packagesDirectory, command = "link", projectDirectory = undefined] = process.argv.slice(2);
+const {
+  mode,
+  packagesDirectory,
+  packageManager,
+  projectDirectory,
+} = argv;
 
-if (!packagesDirectory)
-  throw new Error("Missing packages directory (arg 1)");
-
-const allowedCommands = ["link", "unlink"];
-if (!allowedCommands.includes(command))
-  throw new Error(`Invalid command (arg 2) - expected: ${allowedCommands.join(", ")}`);
-
-const yarnApp =/^win/.test(process.platform) ? "yarn.cmd" : "yarn";
+const pmApp =/^win/.test(process.platform) ? `${packageManager}.cmd` : packageManager;
 
 (async () => {
   const subDirs = fs.readdirSync(packagesDirectory, {withFileTypes: true})
@@ -43,9 +78,9 @@ const yarnApp =/^win/.test(process.platform) ? "yarn.cmd" : "yarn";
       }
 
       try {
-        await executeCommand(yarnApp, [command], directory);
-        if (projectDirectory && command === "link")
-          await executeCommand(yarnApp, [command, packageName], projectDirectory);
+        await executeCommand(pmApp, [mode], directory);
+        if (projectDirectory && mode === "link")
+          await executeCommand(pmApp, [mode, packageName], projectDirectory);
 
         resolve();
       } catch (err) {
@@ -60,8 +95,8 @@ const yarnApp =/^win/.test(process.platform) ? "yarn.cmd" : "yarn";
     logError(err);
   }
 
-  if (projectDirectory && command === "unlink")
-    await executeCommand(yarnApp, ["install", "--check-files"], projectDirectory);
+  if (projectDirectory && mode === "unlink")
+    await executeCommand(pmApp, ["install", "--check-files"], projectDirectory);
 })();
 
 const executeCommand = async (app, args = [], cwd) => {
@@ -83,7 +118,7 @@ const executeCommand = async (app, args = [], cwd) => {
         else reject();
       });
 
-      process.on("closed", (code) => {
+      process.on("closed", () => {
         resolve();
       });
 

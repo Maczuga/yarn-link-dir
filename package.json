@@ -1,14 +1,14 @@
 {
-  "name": "@topsoft4u/yarn-link-dir",
+  "name": "@topsoft4u/mass-link-dir",
   "description": "TODO DESC",
   "version": "1.0.3",
-  "bin": {
-    "yarn-link-dir": "./link-all.js"
-  },
-  "repository": "https://github.com/TopSoft4U/yarn-link-dir",
-  "homepage": "https://github.com/TopSoft4U/yarn-link-dir",
+  "repository": "https://github.com/TopSoft4U/mass-link-dir",
+  "homepage": "https://github.com/TopSoft4U/mass-link-dir",
   "bugs": {
-    "url": "https://github.com/TopSoft4U/yarn-link-dir/issues"
+    "url": "https://github.com/TopSoft4U/mass-link-dir/issues"
+  },
+  "bin": {
+    "mass-link-dir": "./link-all.js"
   },
   "files": [
     "./link-all.js",
@@ -46,5 +46,8 @@
     "extends": [
       "@topsoft4u"
     ]
+  },
+  "dependencies": {
+    "yargs": "^16.2.0"
   }
 }
