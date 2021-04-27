@@ -1,6 +1,6 @@
 {
   "name": "@topsoft4u/mass-link-dir",
-  "description": "TODO DESC",
+  "description": "Simple mass npm/yarn link/unlink",
   "version": "1.0.4",
   "repository": "https://github.com/TopSoft4U/mass-link-dir",
   "homepage": "https://github.com/TopSoft4U/mass-link-dir",
@@ -11,8 +11,8 @@
     "mass-link-dir": "./link-all.js"
   },
   "files": [
-    "./link-all.js",
-    "./lib"
+    "link-all.js",
+    "lib"
   ],
   "license": "MIT",
   "keywords": [
