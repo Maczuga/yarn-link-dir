@@ -1,7 +1,7 @@
 {
   "name": "@topsoft4u/yarn-link-dir",
   "description": "TODO DESC",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "bin": {
     "yarn-link-dir": "./link-all.js"
   },
