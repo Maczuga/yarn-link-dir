@@ -1,0 +1,49 @@
+{
+  "name": "@topsoft4u/yarn-link-dir",
+  "description": "TODO DESC",
+  "version": "1.0.0",
+  "bin": {
+    "yarn-link-dir": "./link-all.js"
+  },
+  "repository": "https://github.com/TopSoft4U/yarn-link-dir",
+  "homepage": "https://github.com/TopSoft4U/yarn-link-dir",
+  "bugs": {
+    "url": "https://github.com/TopSoft4U/yarn-link-dir/issues"
+  },
+  "files": [
+    "./link-all.js"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "TopSoft4U",
+    "Yarn",
+    "link",
+    "unlink"
+  ],
+  "author": {
+    "name": "Łukasz Kolasa",
+    "email": "lukasz.kolasa@topsoft4u.com",
+    "url": "https://topsoft4u.com/"
+  },
+  "contributors": [
+    {
+      "name": "Łukasz Kolasa",
+      "email": "lukasz.kolasa@topsoft4u.com",
+      "url": "https://topsoft4u.com/"
+    }
+  ],
+  "scripts": {
+    "eslint": "eslint --ext js,jsx,ts,tsx src --fix",
+    "deps:check": "npm-check-updates --dep prod,dev,optional",
+    "deps:update": "npm-check-updates --dep prod,dev,optional -u"
+  },
+  "devDependencies": {
+    "@topsoft4u/eslint-config": "^1.0.25",
+    "eslint": "^7.25.0"
+  },
+  "eslintConfig": {
+    "extends": [
+      "@topsoft4u"
+    ]
+  }
+}
