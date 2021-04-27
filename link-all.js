@@ -1,42 +1,103 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-const {exec} = require("child_process");
+const {spawn} = require("child_process");
 const path = require("path");
 const fs = require("fs");
+const colors = require("./lib/console");
 
-const [command = "link", packagesDirectory = __dirname, projectDirectory] = process.argv.slice(2);
+const [packagesDirectory, command = "link", projectDirectory = undefined] = process.argv.slice(2);
 
-const subDirs = fs.readdirSync(packagesDirectory, {withFileTypes: true})
-  .filter(dirEnt => dirEnt.isDirectory())
-  .map(dirEnt => dirEnt.name);
+if (!packagesDirectory)
+  throw new Error("Missing packages directory (arg 1)");
 
-subDirs.forEach(dir => {
-  const directory = path.resolve(packagesDirectory, dir);
-  const packageJsonFile = path.resolve(directory, "package.json");
+const allowedCommands = ["link", "unlink"];
+if (!allowedCommands.includes(command))
+  throw new Error(`Invalid command (arg 2) - expected: ${allowedCommands.join(", ")}`);
 
-  fs.readFile(packageJsonFile, (readErr, json) => {
-    if (readErr)
-      return;
+const yarnApp =/^win/.test(process.platform) ? "yarn.cmd" : "yarn";
 
-    const data = JSON.parse(json);
-    if (!data)
-      return;
+(async () => {
+  const subDirs = fs.readdirSync(packagesDirectory, {withFileTypes: true})
+    .filter(dirEnt => dirEnt.isDirectory())
+    .map(dirEnt => dirEnt.name);
 
-    const packageName = data.name;
-    if (!packageName || packageName.includes("REPLACE_ME"))
-      return;
+  const promises = subDirs.map(dir => new Promise((resolve, reject) => {
+    const directory = path.resolve(packagesDirectory, dir);
+    const packageJsonFile = path.resolve(directory, "package.json");
 
-    exec(`yarn ${command}`, {cwd: directory}, (err, stdout, stderr) => {
-      if (err) console.log(`Error: ${err}`);
-      if (stdout) console.log(`Output: ${stdout}`);
-      if (stderr) console.log(`Std Error: ${stderr}`);
+    fs.readFile(packageJsonFile, async (readErr, json) => {
+      if (readErr) {
+        reject(readErr);
+        return;
+      }
+
+      const data = JSON.parse(json.toString());
+      if (!data) {
+        reject(`Invalid package.json file: ${packageJsonFile}`);
+        return;
+      }
+
+      const packageName = data.name;
+      if (!packageName || packageName.includes("REPLACE_ME")) {
+        reject(`Invalid package name: ${packageName}`);
+        return;
+      }
+
+      try {
+        await executeCommand(yarnApp, [command], directory);
+        if (projectDirectory && command === "link")
+          await executeCommand(yarnApp, [command, packageName], projectDirectory);
+
+        resolve();
+      } catch (err) {
+        reject(err);
+      }
     });
+  }));
 
-    if (projectDirectory) {
-      exec(`yarn ${command} ${packageName}`, {cwd: projectDirectory}, (err, stdout, stderr) => {
-        if (err) console.log(`Error: ${err}`);
-        if (stdout) console.log(`Output: ${stdout}`);
-        if (stderr) console.log(`Std Error: ${stderr}`);
+  try {
+    await Promise.allSettled(promises);
+  } catch (err) {
+    logError(err);
+  }
+
+  if (projectDirectory && command === "unlink")
+    await executeCommand(yarnApp, ["install", "--check-files"], projectDirectory);
+})();
+
+const executeCommand = async (app, args = [], cwd) => {
+  return new Promise((resolve, reject) => {
+    try {
+
+      const process = spawn(app, args, {cwd});
+
+      process.stdout.on("data", (data) => {
+        logInfo(data.toString().trim());
       });
+
+      process.stderr.on("data", (data) => {
+        logWarn(data.toString().trim());
+      });
+
+      process.once("exit", (code) => {
+        if (code === 0) resolve();
+        else reject();
+      });
+
+      process.on("closed", (code) => {
+        resolve();
+      });
+
+      process.on("error", (error) => {
+        logError(error.message);
+        reject(error.message);
+      });
+    } catch (error) {
+      logError(error.message);
+      reject(error.message);
     }
   });
-});
+};
+
+const logWarn = (...args) => console.warn(colors.bg.yellow, colors.fg.white, "i ", colors.bg.black, colors.fg.yellow, ...args);
+const logError = (...args) => console.warn(colors.bg.red, colors.fg.white, " ! ",colors.bg.black, colors.fg.red, ...args);
+const logInfo = (...args) => console.warn(colors.bg.black, colors.fg.white, ...args);

@@ -11,7 +11,8 @@
     "url": "https://github.com/TopSoft4U/yarn-link-dir/issues"
   },
   "files": [
-    "./link-all.js"
+    "./link-all.js",
+    "./lib"
   ],
   "license": "MIT",
   "keywords": [
