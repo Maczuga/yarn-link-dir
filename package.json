@@ -1,7 +1,7 @@
 {
   "name": "@topsoft4u/mass-link-dir",
   "description": "Simple mass npm/yarn link/unlink",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "repository": "https://github.com/TopSoft4U/mass-link-dir",
   "homepage": "https://github.com/TopSoft4U/mass-link-dir",
   "bugs": {
